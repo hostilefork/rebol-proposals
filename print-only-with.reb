@@ -108,3 +108,18 @@ print: function [
 
     system/contexts/lib/exit
 ]
+
+
+; There should not be anything called PRINTF in Rebol/Red unless it actually
+; can do:
+;
+;     printf "%d %s" [10 "Hello"]
+;
+; Which is not what this PRINTF is, and it shouldn't be in the box.
+;
+;     PRINT FORMAT rules values
+;
+; ...is plenty literate.  Anyone who wants to call that PRINTF because they
+; "do that a lot" should put it in their own module.
+
+printf: does [do make error! "printf deprecated, use PRINT FORMAT"]

@@ -114,7 +114,7 @@ combine: function [
                 either integer? limit [
                     0 <= limit: limit - 1
                 ] [
-                    block <> limit
+                    block != limit
                 ]
             ]
         ] 

@@ -170,27 +170,39 @@ for: func [
 
 
 ; "FOREACH" is bad as a name; it's hard to scan, and given that it's a
-; non-word the eye often has the word "REACH" jump out of it.  EACH is
+; non-word the eye often has the word "REACH" jump out of it.  FOR-EACH
+; solves the problem at the cost of introducing a hyphen.  On the downside
+; of the hyphen, it's long and EACH is accepted fairly standalone in systems
+; like jQuery and shorter to type, plus distancing from the word FOR which
+; sounds very "old" and not intrinsically meaningful standalone is good.
+;
+; On the other hand, there is an important complementary routine MAP-EACH
+; which uses the same -EACH style accessor to a different effect by gathering
+; the results of each evaluation and storing it into a block.
+;
+; With several examples studied, including EVERY which was panned for
 ; shorter, known well by its name in systems like jQuery, and given the
-; distancing from "FOR" makes more sense to be using.  However, it is
-; not quite as nice as EVERY, so we are trying that even though it is
-; a little more uncommon.
+; distancing from "FOR" makes more sense to be using.  Other possibilites
+; for the word would be FOR-EACH which has the disadvantage of being
+; hyphenated.  EVERY might be edgy and a little more unique, but in trying
+; that out a while I found myself not really liking it.  (Also EACH can
+; abbreviate naturally as EA in Rebmu; seeing EV gets confused with EVEN?)
 ;
 ; With support for a none! type, you could write:
 ;
-;     every # [a b c] [print "No loop variable"]
+;     for-each # [a b c] [print "No loop variable"]
 ;
 ; ...as a shorter version of something more verbose like:
 ;
 ;     loop # [1 to (length? [a b c])] [print "No loop variable"]
 ;
-; At present EVERY does not support that, but it could be useful and a
+; At present FOR-EACH does not support that, but it could be useful and a
 ; consistent point of learnability with LOOP.  The name for-each is
 ; available also but is hyphenated making it a little "thorny" although
 ; it may be okay; trying different things.
 
-every: :lib/foreach
-foreach: does [do make error! "foreach is now EVERY"]
+for-each: :lib/foreach
+foreach: does [do make error! "foreach is now FOR-EACH"]
 
 
 
@@ -212,47 +224,55 @@ foreach: does [do make error! "foreach is now EVERY"]
 ;
 ; But it is useful, mostly because it lets you modify the series as you
 ; go and then touch up the series position, letting the construct
-; continue to move you.  This is similar to iterators in other languages.
-; In a sense you are using the series itself as its own iterator.
-; Used as a transitive verb, you can see it taking the series and use
-; it as its own iterator.  So ITERATE is a good starting name for it.
+; continue to move you.  This is similar to iterators in other languages,
+; and I was tempted to call it "ITERATE".  But that is wordy and the idea
+; of moving through a series one step at a time helps give you a clue that
+; in any given step you can change the state.  It's a shorter name, and
+; "single-stepping" is what we'll try for now.  STEP might collide with
+; a variable that was recording what step you were in during a process,
+; but the language is no stranger to stealing words that you might
+; overwrite and use LIB/STEP if you do.
 ;
-; In fact, using the trick of passing in a literal NONE can be similar here;
+; Using the trick of passing in a literal NONE can be similar here;
 ; spun differently.  Instead of passing a none for the variable to be used
 ; in the loop, you can optionally pass it in for the *series to be iterated*.
 ; If none, it will assume you mean the variable already contains the
-; series, set to the position you want to iterate from.
+; series, set to the position you want to start stepping from.
 
-forall: does [do make error! "forall is now ITERATE"]
+forall: does [do make error! "forall is now achieved via STEP"]
 
 ;-- Note: REPEAT becomes what used to be UNTIL
 
-iterate: function [
-    {Iterate through all the positions in a series}
+; CAN HANDLE BREAK AS WRITTEN BUT UNSAFE W.R.T. RETURN
+
+step: function [
+    {Advance a series variable one step at a time until the end is reached.}
     'word [word!]
-        {Word whose value is set each time through the iteration}
+        {Word whose value holds the series position during each step}
     series [series! none!]
-        {Series to iterate or literal NONE! (#) if word contains series}
+        {Series to begin iterating or NONE! (#) if 'word is that series!}
     body [block!]
-        {Code to execute on each position iteration}
+        {Code to execute on each step}
 ] [
-    set/any quote word-original: get/any word
+    set/any quote original-value: get/any word
     either series [
-        series: series
+        set word series ; we know it can only be NONE! or a SERIES...
     ] [
-        unless series? :word-original [
-            do make error! {Series to ITERATE is none and word is not series}
+        unless series? :original-value [
+            do make error! {No SERIES to STEP but 'WORD value is not a SERIES!}
         ]
-        series: word-original
+        set word original-value
     ]
     also (
-        while [not tail? series] [
-            set word series
-            do body
-            series: next series
+        while [not tail? get word] compose [
+            (body)
+            unless series? get word [
+                do make error!
+                {Value in WORD after STEP was not a SERIES!}
+            ]
+            set word next get word
         ]
     ) (
-        set/any word :word-original
+        set/any word :original-value
     )
 ]
-

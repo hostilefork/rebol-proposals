@@ -12,12 +12,12 @@ to: function [
     type [any-type!] "The datatype or example value"
     value [any-type!] "The value to convert"
 ] [
-    switch/default to-word type [
+    switch/default to-word either datatype? :type [type] [type-of :type] [
        string! [
            either block? :value [
                ; dumb heuristic, assume the average item is length 5?  :-/
                result: make string! (5 * length value)
-               iterate value [
+               step value # [
                    append result case [
                        block? value/1 ["["]
                        paren? value/1 ["("]
@@ -39,7 +39,7 @@ to: function [
            ]
        ]
     ] [
-       system/contexts/lib/to type :value
+       system/contexts/lib/to :type :value
     ]
 ]
 

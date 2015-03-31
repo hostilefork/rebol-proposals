@@ -31,6 +31,9 @@ void: func [
 ]
 
 
+set?: function [value [any-type!]] [not unset? :value]
+
+
 ;-- Rename /QUIT to /EXIT to signify that you're getting the code
 
 catch: func [

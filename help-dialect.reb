@@ -16,7 +16,7 @@ Rebol [
         over in a mode very much like SHELL or similar.  What all
         it might be willing to do is a subject for research, but
         various ideas like querying or submitting to the bug 
-        database could be interesting.
+        da^-ase could be interesting.
 
         This includes some fixes in any case; before asking for
         HELP on a function would source it if you didn't quote the
@@ -24,9 +24,16 @@ Rebol [
     }
 ]
 
-;--
-;-- This was the old help string to be borrowed from as appropriate.
-;--
+;
+; This was the old help string (to be borrowed from as appropriate for
+; some kind of help system banner, though of course it should provide
+; more "activity".)
+;
+; In observing its ugliness, please consult:
+;
+;     http://curecode.org/rebol3/ticket.rsp?id=2211
+;
+
 {
 ^-^-^-Use HELP or ? to see built-in info:
 
@@ -68,7 +75,7 @@ Rebol [
 
 ^-^-^-^-chat - open DevBase developer forum/BBS
 ^-^-^-^-docs - open DocBase document wiki website
-^-^-^-^-bugs - open CureCore bug database website
+^-^-^-^-bugs - open CureCore bug da^-ase website
 ^-^-^-^-demo - run demo launcher (from rebol.com)
 ^-^-^-^-about - see general product info
 ^-^-^-^-upgrade - check for newer versions
@@ -92,9 +99,9 @@ help: function [
         if arg = 'banner [
             print/only [
 
-    {Entering HELP dialect mode for the command line.} newline
-    {(To exit this mode, hit ESCAPE twice quickly.)} newline
-    {More information coming on this development soon...} newline
+    {Entering HELP dialect mode for the command line.} ^|
+    {(To exit this mode, hit ESCAPE twice quickly.)} ^|
+    {More information coming on this development soon...} ^|
 
             ]
             return void 
@@ -106,7 +113,7 @@ help: function [
 
         ;-- Ignore any meta requests we don't understand (room for expansion)
 
-        return void 
+        return void
     ]
 
     if all [
@@ -158,7 +165,7 @@ help: function [
     type-name: function [value] [
         str: to-string type-of :value
         clear back tail str ;-- remove exclamation point from type
-        combine [(either find "aeiou" first str ["an"] ["a"]) space str]
+        combine [(either find "aeiou" first str ["an"] ["a"]) ^_ str]
     ]
 
 ; Needs to be improved and done properly in the dialect.. what about
@@ -172,7 +179,7 @@ help: function [
 ;        types: dump-obj/match lib :arg
 ;        sort types
 ;        if not empty? types [
-;            print ["Found these related words:" newline types]
+;            print ["Found these related words:" ^| types]
 ;            return void
 ;        ]
 
@@ -180,13 +187,13 @@ help: function [
         all [word? :arg datatype? get :arg] [
             value: spec-of get :arg
             print [
-                to-string :arg "is a datatype" newline
+                to-string :arg "is a datatype" ^|
 
                 "It is defined as"
                 either find "aeiou" first value/title ["an"] ["a"]
-                value/title newline
+                value/title ^|
 
-                "It is of the general type" value/type newline
+                "It is of the general type" value/type ^|
             ]
         ]
 
@@ -225,7 +232,7 @@ help: function [
             ]
             type-name :value "of value: "
             either any [object? value port? value] [
-                [newline dump-obj value]
+                [^| dump-obj value]
             ] [
                 to-string :value
             ]
@@ -236,7 +243,7 @@ help: function [
     ; It's a function, so print out the usage information
 
     print "USAGE:"
-    print/only tab
+    print/only ^-
 
     parameters: words-of :value
     clear find parameters /local
@@ -254,15 +261,13 @@ help: function [
     ]
 
     print/only [
-        newline 
+        ^|
 
-        "DESCRIPTION:" newline
+        "DESCRIPTION:" ^|
 
-        tab any [title-of :value "(undocumented)"] newline
+        ^- any [title-of :value "(undocumented)"] ^|
 
-        tab
-        {Function sub-type is} space
-        type-name :value newline
+        ^- {Function sub-type is} ^_ type-name :value ^|
     ]
 
     unless parameters: find spec-of :value any-word! [return void]
@@ -270,20 +275,17 @@ help: function [
     print-parameters: function [label list /extra] [
         if empty? list [return void]
         print label
-        every param list [
+        for-each param list [
             print/only [
-                if all [extra word? param/1] [tab]
-                tab to-string param/1
+                (if all [extra | word? param/1] ^-)
+                ^- to-string param/1
                 if param/2 [
-                    [space "--" space to-string param/2]
+                    [^_ "--" ^_ to-string param/2]
                 ]
-                if all [
-                    param/3
-                    not refinement? param/1
-                ] [
-                    [space "(" to-string param/3 ")"]
+                if all [param/3 | not refinement? param/1] [
+                    [^_ "(" to-string param/3 ")"]
                 ]
-                newline
+                ^|
             ]
         ]
     ]
@@ -302,8 +304,8 @@ help: function [
             any [set v block! (b/3: v) | set v string! (b/2: v)]
         ]
     ]
-    print-parameters "^/ARGUMENTS:" argl
-    print-parameters/extra "^/REFINEMENTS:" refl
+    print-parameters "ARGUMENTS" argl
+    print-parameters/extra "REFINEMENTS" refl
     void 
 ]
 
